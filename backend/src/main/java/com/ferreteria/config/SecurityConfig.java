@@ -27,8 +27,6 @@ public class SecurityConfig {
 
     private final TenantFilter tenantFilter;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    // ¡YA NO NECESITAMOS LOS BEANS QUE CAUSABAN EL CÍRCULO!
-    // Solo pedimos el AuthenticationProvider, que ahora se crea en ApplicationConfig.
     private final AuthenticationProvider authenticationProvider;
 
     @Bean
@@ -37,13 +35,14 @@ public class SecurityConfig {
                 .cors(withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/superadmin/**", "/api/auth/**", "/ws-ferreteria/**").permitAll()
+                        // AÑADIMOS LA NUEVA RUTA PÚBLICA
+                        .requestMatchers("/api/superadmin/**", "/api/auth/**", "/api/general/**", "/ws-ferreteria/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                // Usamos el AuthenticationProvider que nos inyectan
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(tenantFilter, UsernamePasswordAuthenticationFilter.class)
+                // El filtro JWT ahora va DESPUÉS del de tenant para asegurar que el contexto del inquilino ya está establecido.
                 .addFilterBefore(jwtAuthenticationFilter, TenantFilter.class);
 
         return http.build();
@@ -52,8 +51,8 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Permitimos peticiones desde el frontend de desarrollo y la futura URL de producción
-        configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://compania-chavez.localhost:5173"));
+        // AÑADIMOS la URL por defecto (sin subdominio) a los orígenes permitidos.
+        configuration.setAllowedOrigins(List.of("http://localhost:5174", "http://localhost:5173", "http://compania-chavez.localhost:5173"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Tenant-ID"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

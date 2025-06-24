@@ -3,23 +3,28 @@ import { Routes, Route } from 'react-router-dom';
 import Login from '../pages/Login';
 import Dashboard from '../pages/Dashboard';
 import ProtectedRoute from './ProtectedRoute';
+import AppEntry from '../pages/AppEntry'; // Importamos el nuevo componente
+import SuperAdminLogin from '../pages/SuperAdminLogin';
+import SuperAdminDashboard from '../pages/SuperAdminDashboard';
 
 const AppRouter = () => {
     return (
         <Routes>
-            {/* Ruta Pública */}
-            <Route path="/" element={<Login />} />
-            <Route path="/superadmin/login" element={<Login />} />
-            {/* Rutas Protegidas */}
+            {/* La ruta raíz ahora es manejada por AppEntry */}
+            <Route path="/" element={<AppEntry />} />
+
+            {/* Las demás rutas permanecen igual */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/superadmin/login" element={<SuperAdminLogin />} />
+
             <Route element={<ProtectedRoute />}>
                 <Route path="/dashboard" element={<Dashboard />} />
-                {/* Ejemplo de ruta solo para ADMINS */}
-                {/* <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
-                    <Route path="/admin/usuarios" element={<GestionUsuarios />} />
-                </Route> */}
+            </Route>
+            
+            <Route element={<ProtectedRoute allowedRoles={['SUPER_ADMIN']} />}>
+                 <Route path="/superadmin/dashboard" element={<SuperAdminDashboard />} />
             </Route>
 
-             {/* Ruta para cualquier otra URL no definida */}
             <Route path="*" element={<div>404 - Página no encontrada</div>} />
         </Routes>
     );
