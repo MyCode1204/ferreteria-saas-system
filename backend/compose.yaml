@@ -1,0 +1,39 @@
+# Contenido FINAL para: backend/compose.yaml
+
+
+
+version: '3.8'
+services:
+  postgres:
+    image: postgres:15
+    container_name: ferreteria_postgres
+    environment:
+      POSTGRES_DB: ferreteria_master
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+    ports:
+      - "59908:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d ferreteria_master"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+
+
+# services:
+#   postgres:
+#     image: 'postgres:15' # Versión estable y compatible
+#     container_name: ferreteria-db
+#    environment:
+#      POSTGRES_DB: ferreteria_master
+#      POSTGRES_USER: admin
+#      POSTGRES_PASSWORD: password
+#      driver-class-name: org.postgresql.Driver
+#    ports:
+#      # Mapeamos el puerto para poder verlo desde pgAdmin/DBeaver si queremos
+#      - "59908:5432"
