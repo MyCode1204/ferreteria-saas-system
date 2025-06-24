@@ -20,6 +20,7 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -130,5 +131,9 @@ public class TenantManagementService {
             throw new RuntimeException("La BD se creó pero no se pudo configurar el usuario admin: " + e.getMessage(), e);
         }
         return savedTenant;
+    }
+
+    public List<Tenant> getAllTenants() {
+        return tenantRepository.findAllByIsActive(true);
     }
 }

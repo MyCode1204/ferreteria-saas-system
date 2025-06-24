@@ -5,6 +5,7 @@ import com.ferreteria.entities.tenant.Tenant;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.UUID;
 
 @Repository
@@ -18,4 +19,6 @@ public interface TenantRepository extends JpaRepository<Tenant, UUID> {
      * No necesitamos escribir la implementación, Spring lo hace por nosotros.
      */
     boolean existsByTenantId(String tenantId);
+
+    List<Tenant> findAllByIsActive(boolean isActive);
 }

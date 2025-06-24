@@ -9,7 +9,7 @@ const AppRouter = () => {
         <Routes>
             {/* Ruta Pública */}
             <Route path="/" element={<Login />} />
-
+            <Route path="/superadmin/login" element={<Login />} />
             {/* Rutas Protegidas */}
             <Route element={<ProtectedRoute />}>
                 <Route path="/dashboard" element={<Dashboard />} />

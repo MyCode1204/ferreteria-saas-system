@@ -7,12 +7,14 @@ app:
       driver-class-name: org.postgresql.Driver
 
 spring:
-  # Habilitamos Flyway y lo apuntamos a las migraciones de la BD Maestra
   flyway:
     enabled: true
     locations: classpath:db/migration/master
     baseline-on-migrate: true
-  # Quitamos toda la configuración de JPA de aquí, porque la controlamos en las clases Java
+    # --- PASO 1: AÑADIR ESTA LÍNEA TEMPORALMENTE ---
+    # Esta opción le dice a Flyway que actualice el checksum (la firma)
+    # de la migración que ha fallado.
+    repair: true
   jpa:
     show-sql: true
     properties:

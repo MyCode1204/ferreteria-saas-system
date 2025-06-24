@@ -55,6 +55,12 @@ const Login = () => {
                     <p className="mt-4 text-gray-600">
                         Por favor, acceda a través de la URL proporcionada para su compañía.
                     </p>
+                    <div className="mt-6">
+                        {/* <Link to="/superadmin/login" className="inline-flex items-center px-4 py-2 text-sm font-medium text-indigo-600 border border-transparent rounded-md hover:bg-indigo-50">
+                            <FiLogIn className="mr-2" />
+                            Acceso Superadmin
+                        </Link> */}
+                    </div>
                 </div>
             </div>
         );
