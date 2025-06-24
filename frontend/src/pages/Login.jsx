@@ -2,10 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import api from '../services/api';
+import { loginRequest } from '../services/api'; // Importamos la función específica de login
 
 const Login = () => {
-    // El tenantId ya no es un estado del formulario, se obtendrá de la URL.
     const [tenantId, setTenantId] = useState(null);
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -13,37 +12,30 @@ const Login = () => {
     const navigate = useNavigate();
     const auth = useAuth();
 
-    // ¡LA MAGIA OCURRE AQUÍ!
-    // Este efecto se ejecuta una sola vez cuando el componente se carga.
     useEffect(() => {
-        const hostname = window.location.hostname; // ej: "compania-chavez.localhost"
+        // Esta lógica para detectar el subdominio está perfecta
+        const hostname = window.location.hostname;
         const parts = hostname.split('.');
-
-        // Si tenemos un subdominio (ej: compania-chavez.localhost -> 2 partes)
-        // Y no es 'www', lo establecemos como nuestro tenantId.
         if (parts.length > 1 && parts[0] !== 'www' && parts[0] !== 'localhost') {
-            const subdomain = parts[0];
+            // Reemplazamos '.ferreteria.doc' o '.localhost' para obtener el ID limpio
+            const subdomain = parts[0].replace('.ferreteria.doc', '').replace('.localhost', '');
             setTenantId(subdomain);
-            console.log("Inquilino detectado por subdominio:", subdomain);
-        } else {
-            console.log("No se detectó un subdominio de inquilino.");
         }
-    }, []); // El array vacío asegura que se ejecute solo una vez.
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
 
         if (!tenantId) {
-            setError('Acceso denegado. Ingrese desde la URL de su empresa (ej: su-empresa.ferreteria.doc)');
+            setError('Acceso denegado. Ingrese desde la URL de su empresa.');
             return;
         }
 
         try {
-            // Ya no usamos X-Tenant-ID. El backend lo leerá del subdominio.
-            const response = await api.post('/auth/login', { username, password });
+            // ¡Usamos nuestra nueva función de login!
+            const response = await loginRequest(tenantId, { username, password });
             
-            // Pasamos el token Y el tenantId al contexto para guardarlos.
             auth.login(response.data.token, tenantId);
             navigate('/dashboard');
 
@@ -53,7 +45,8 @@ const Login = () => {
         }
     };
 
-    // Si no se detecta un inquilino, mostramos un mensaje de bienvenida o error.
+    // ... el resto del componente (el return con el JSX) puede quedar exactamente igual ...
+    // (Aquí iría el return con el formulario de login que ya tienes)
     if (!tenantId) {
         return (
             <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -62,15 +55,11 @@ const Login = () => {
                     <p className="mt-4 text-gray-600">
                         Por favor, acceda a través de la URL proporcionada para su compañía.
                     </p>
-                    <p className="mt-2 text-sm text-gray-500">
-                        Ejemplo: <code className="px-2 py-1 font-mono bg-gray-200 rounded">mi-empresa.ferreteria.doc</code>
-                    </p>
                 </div>
             </div>
         );
     }
 
-    // Si sí hay un inquilino, mostramos el formulario de login.
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-100">
             <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
@@ -109,5 +98,4 @@ const Login = () => {
         </div>
     );
 };
-
 export default Login;

@@ -1,26 +1,40 @@
+// Ubicación: frontend/src/services/api.js
 import axios from 'axios';
 
-const api = axios.create({
-    baseURL: 'http://localhost:8080/api', // La base de tu API
-});
+// Función que crea un cliente de API para un inquilino específico
+const getApiClient = (tenantId) => {
+    // Construimos la URL base dinámicamente
+    const baseURL = `http://${tenantId}.localhost:8080/api`;
 
-// Interceptor para añadir las cabeceras a cada petición
-api.interceptors.request.use(
-    (config) => {
-        const token = localStorage.getItem('token');
-        const tenantId = localStorage.getItem('tenantId');
+    const api = axios.create({
+        baseURL,
+    });
 
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
+    // Interceptor para añadir el token de autenticación a futuras peticiones
+    api.interceptors.request.use(
+        (config) => {
+            const token = localStorage.getItem('token');
+            if (token) {
+                config.headers.Authorization = `Bearer ${token}`;
+            }
+            return config;
+        },
+        (error) => {
+            return Promise.reject(error);
         }
-        if (tenantId) {
-            config.headers['X-Tenant-ID'] = tenantId;
-        }
-        return config;
-    },
-    (error) => {
-        return Promise.reject(error);
-    }
-);
+    );
 
-export default api;
+    return api;
+};
+
+// Exportamos una función específica para el login
+export const loginRequest = (tenantId, credentials) => {
+    // Creamos un cliente de API sin interceptor de token, ya que aún no lo tenemos
+    const loginApi = axios.create({
+        baseURL: `http://${tenantId}.localhost:8080/api`
+    });
+    return loginApi.post('/auth/login', credentials);
+};
+
+// Exportamos la función principal para usarla en el resto de la app
+export default getApiClient;
