@@ -1,7 +1,7 @@
-/** @type {import('postcss-load-config').Config} */
+// Ubicación: frontend/postcss.config.js
 export default {
   plugins: {
-    '@tailwindcss/postcss': {}, // Usamos el nuevo plugin aquí
+    tailwindcss: {},
     autoprefixer: {},
   },
 }
