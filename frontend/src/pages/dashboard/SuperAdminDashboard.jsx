@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useAuth } from '../hooks/useAuth';
-import { createTenant } from '../services/generalApi';
+import { useAuth } from '../../hooks/useAuth';
+import { createTenant } from '../../services/generalApi';
 
 const SuperAdminDashboard = () => {
     const { user, logout, token } = useAuth();

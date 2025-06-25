@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
-import { loginRequest } from '../services/api';
-import { checkTenantExists } from '../services/generalApi'; // Importamos la función de verificación
+import { useAuth } from '../../hooks/useAuth';
+import { loginRequest } from '../../services/api';
+import { checkTenantExists } from '../../services/generalApi'; // Importamos la función de verificación
 
 const Login = () => {
     const [tenantId, setTenantId] = useState(null);

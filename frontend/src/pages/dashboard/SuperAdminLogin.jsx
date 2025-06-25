@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
-import { superAdminLogin } from '../services/generalApi';
+import { useAuth } from '../../hooks/useAuth';
+import { superAdminLogin } from '../../services/generalApi';
 
 const SuperAdminLogin = () => {
     // Corregido: se usan los setters correctos (setUsername, setPassword)

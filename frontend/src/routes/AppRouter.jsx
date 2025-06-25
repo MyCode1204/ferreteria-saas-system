@@ -1,11 +1,11 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import Login from '../pages/Login';
-import Dashboard from '../pages/Dashboard';
+import Login from '../pages/client/Login';
+import Dashboard from '../pages/client/Dashboard';
 import ProtectedRoute from './ProtectedRoute';
 import AppEntry from '../pages/AppEntry'; // Importamos el nuevo componente
-import SuperAdminLogin from '../pages/SuperAdminLogin';
-import SuperAdminDashboard from '../pages/SuperAdminDashboard';
+import SuperAdminLogin from '../pages/dashboard/SuperAdminLogin';
+import SuperAdminDashboard from '../pages/dashboard/SuperAdminDashboard';
 
 const AppRouter = () => {
     return (
