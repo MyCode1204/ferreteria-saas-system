@@ -36,17 +36,18 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         // AÑADIMOS LA NUEVA RUTA PÚBLICA
-                        .requestMatchers("/api/superadmin/**", "/api/auth/**", "/api/general/**", "/ws-ferreteria/**").permitAll()
+                        .requestMatchers( "/api/auth/superadmin/login", "/api/auth/**", "/api/general/**", "/ws-ferreteria/**").permitAll()
+                        .requestMatchers("/api/superadmin/**").hasRole("SUPER_ADMIN")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)
-                .addFilterBefore(tenantFilter, UsernamePasswordAuthenticationFilter.class)
-                // El filtro JWT ahora va DESPUÉS del de tenant para asegurar que el contexto del inquilino ya está establecido.
-                .addFilterBefore(jwtAuthenticationFilter, TenantFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
 
         return http.build();
     }
+
 
     @Bean
     CorsConfigurationSource corsConfigurationSource() {

@@ -1,14 +1,14 @@
-// Ubicación: backend/src/main/java/com/ferreteria/config/ApplicationConfig.java
 package com.ferreteria.config;
 
 import com.ferreteria.repository.business.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary; // <-- Importante
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.ProviderManager; // <-- Importante
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -20,6 +20,7 @@ public class ApplicationConfig {
 
     private final UsuarioRepository usuarioRepository;
 
+    // Tu UserDetailsService para los usuarios de inquilinos.
     @Bean
     public UserDetailsService userDetailsService() {
         return username -> usuarioRepository.findByUsername(username)
@@ -31,6 +32,7 @@ public class ApplicationConfig {
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
     }
 
+    // El AuthenticationProvider para los usuarios de inquilinos.
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
@@ -39,13 +41,18 @@ public class ApplicationConfig {
         return authProvider;
     }
 
+    // El PasswordEncoder que será usado por ambos sistemas de autenticación.
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    // --- ESTA ES LA PARTE MODIFICADA ---
+    // Definimos explícitamente el AuthenticationManager para los inquilinos
+    // y lo marcamos como el principal (@Primary).
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
+    @Primary
+    public AuthenticationManager authenticationManager() {
+        return new ProviderManager(authenticationProvider());
     }
 }

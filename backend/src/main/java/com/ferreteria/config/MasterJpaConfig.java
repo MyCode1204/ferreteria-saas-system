@@ -16,7 +16,7 @@ import javax.sql.DataSource;
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(
-        basePackages = "com.ferreteria.repository.superadmin", // <-- Solo repositorios de superadmin
+        basePackages = "com.ferreteria.repository.superadmin", // <-- ¡Correcto! Escanea los repositorios correctos.
         entityManagerFactoryRef = "masterEntityManagerFactory",
         transactionManagerRef = "masterTransactionManager"
 )
@@ -29,7 +29,8 @@ public class MasterJpaConfig {
             @Qualifier("masterDataSource") DataSource dataSource) {
         return builder
                 .dataSource(dataSource)
-                .packages("com.ferreteria.entities.tenant") // <-- Solo entidades de superadmin
+                // ▼▼▼ ¡SOLUCIÓN! Añade el paquete que falta. ▼▼▼
+                .packages("com.ferreteria.entities.tenant", "com.ferreteria.entities.superadmin")
                 .persistenceUnit("master")
                 .build();
     }
