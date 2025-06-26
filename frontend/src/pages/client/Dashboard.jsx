@@ -1,171 +1,97 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Sun, Moon, DollarSign, ArrowUp, ArrowDown, Package, Users, LogOut, PlusCircle, FileText, UserPlus } from 'lucide-react';
+import { Link, Outlet, useLocation } from 'react-router-dom';
+import { ShoppingCart, Package, Users, DollarSign, BarChart2, LogOut, Menu, X } from 'lucide-react';
 
-// --- DATOS DE EJEMPLO (Simulando una llamada a la API REST) ---
-const dailyStats = {
-    totalSales: 785.50,
-    cashIncome: 650.00,
-    cashExpenses: 75.00,
-    lowStockProducts: 8,
-};
-
-const salesByDay = [
-    { name: 'Lun', ventas: 400 },
-    { name: 'Mar', ventas: 300 },
-    { name: 'Mié', ventas: 680 },
-    { name: 'Jue', ventas: 500 },
-    { name: 'Vie', ventas: 785 },
-    { name: 'Sáb', ventas: 1100 },
-];
-
-const lowStockItems = [
-    { id: 1, name: 'Clavos de 2"', stock: 15, min_stock: 20 },
-    { id: 2, name: 'Tubo PVC 1/2"', stock: 5, min_stock: 10 },
-    { id: 3, name: 'Cinta Aislante', stock: 18, min_stock: 20 },
-    { id: 4, name: 'Foco LED 12W', stock: 9, min_stock: 15 },
-];
-
-// --- COMPONENTES REUTILIZABLES ---
-
-// Tarjeta para mostrar un KPI principal
-const StatCard = ({ title, value, icon, detail }) => (
-    <div className="p-6 transition-all duration-300 transform bg-white border rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 hover:-translate-y-1">
-        <div className="flex items-start justify-between">
-            <div className="flex flex-col space-y-2">
-                <span className="text-gray-500 dark:text-gray-400">{title}</span>
-                <span className="text-3xl font-bold dark:text-white">{value}</span>
-                {detail && <span className="text-sm text-green-500">{detail}</span>}
-            </div>
-            <div className="p-3 text-white bg-blue-500 rounded-full">
-                {icon}
-            </div>
-        </div>
-    </div>
-);
-
-// Botón para acciones rápidas
-const QuickActionButton = ({ title, icon, role, userRoles }) => {
-    // Si se define un rol para el botón y el usuario no lo tiene, no se muestra
-    if (role && !userRoles.includes(role)) {
-        return null;
-    }
+// Componente para los items del menú
+const NavItem = ({ to, icon, children }) => {
+    const location = useLocation();
+    const isActive = location.pathname === `/dashboard${to}` || (to === '/ventas' && location.pathname === '/dashboard');
 
     return (
-        <button className="flex flex-col items-center justify-center p-6 space-y-3 transition-all duration-300 bg-white border rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 hover:shadow-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+        <Link
+            to={`/dashboard${to}`}
+            className={`flex items-center px-4 py-3 text-gray-700 rounded-lg transition-colors duration-200 ${
+                isActive
+                    ? 'bg-indigo-200 text-indigo-800 font-bold'
+                    : 'hover:bg-gray-200'
+            }`}
+        >
             {icon}
-            <span className="font-semibold text-gray-700 dark:text-gray-200">{title}</span>
-        </button>
+            <span className="mx-4">{children}</span>
+        </Link>
     );
 };
 
 
-// --- COMPONENTE PRINCIPAL DEL DASHBOARD ---
-
 const Dashboard = () => {
     const { user, logout } = useAuth();
-    const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+    const [isSidebarOpen, setSidebarOpen] = useState(false);
 
-    useEffect(() => {
-        const root = window.document.documentElement;
-        root.classList.remove(theme === 'light' ? 'dark' : 'light');
-        root.classList.add(theme);
-        localStorage.setItem('theme', theme);
-    }, [theme]);
-
-    const toggleTheme = () => {
-        setTheme(theme === 'light' ? 'dark' : 'light');
-    };
-
-    // --- INICIO DE LA CORRECCIÓN ---
-    // Si el usuario aún no ha cargado, muestra un mensaje de carga.
-    // Esto evita el error "Cannot read properties of null"
     if (!user) {
-        return (
-            <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
-                <p className="text-xl text-gray-700 dark:text-gray-200">Cargando dashboard...</p>
-            </div>
-        );
+        return <div className="flex items-center justify-center min-h-screen">Cargando...</div>;
     }
-    // --- FIN DE LA CORRECCIÓN ---
 
-    // Si llegamos a este punto, 'user' ya no es null y podemos renderizar de forma segura.
+    const sidebarContent = (
+      <>
+        <div className="flex items-center justify-center mt-8">
+            <div className="flex items-center">
+                 <div className="w-12 h-12 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-xl">
+                    {user.username.charAt(0).toUpperCase()}
+                </div>
+                <span className="mx-2 text-lg font-semibold text-gray-800">
+                    {user.username}
+                </span>
+            </div>
+        </div>
+
+        <nav className="mt-10 px-2">
+            <NavItem to="/ventas" icon={<ShoppingCart size={20} />}>Venta Rápida</NavItem>
+            <NavItem to="/productos" icon={<Package size={20} />}>Productos</NavItem>
+            <NavItem to="/clientes" icon={<Users size={20} />}>Clientes</NavItem>
+            <NavItem to="/caja" icon={<DollarSign size={20} />}>Caja Diaria</NavItem>
+            <NavItem to="/reportes" icon={<BarChart2 size={20} />}>Reportes</NavItem>
+        </nav>
+
+        <div className="absolute bottom-0 w-full p-4">
+             <button
+                onClick={logout}
+                className="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring"
+            >
+                <LogOut size={16} className="mr-2" />
+                Cerrar Sesión
+            </button>
+        </div>
+      </>
+    );
+
     return (
-        <div className="min-h-screen p-4 sm:p-6 lg:p-8 bg-gray-50 dark:bg-gray-900">
-            <div className="max-w-7xl mx-auto">
-                {/* --- Cabecera --- */}
-                <header className="flex flex-col items-start justify-between gap-4 mb-8 sm:flex-row sm:items-center">
-                    <div>
-                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard de Ferretería</h1>
-                        <p className="mt-1 text-gray-600 dark:text-gray-300">Bienvenido de nuevo, <span className="font-semibold text-blue-500">{user.username}</span>!</p>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <button onClick={toggleTheme} className="p-2 transition-colors duration-200 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
-                            {theme === 'light' ? <Moon className="w-6 h-6 text-gray-700" /> : <Sun className="w-6 h-6 text-yellow-400" />}
-                        </button>
-                        <button onClick={logout} className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-white transition-colors bg-red-500 rounded-lg hover:bg-red-600">
-                            <LogOut size={16} />
-                            Cerrar Sesión
-                        </button>
-                    </div>
-                </header>
+        <div className="flex h-screen bg-gray-100">
+            {/* Sidebar para pantallas grandes */}
+            <aside className="hidden md:flex flex-col w-64 bg-white shadow-lg relative">
+                {sidebarContent}
+            </aside>
 
-                {/* --- KPIs Principales --- */}
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                    <StatCard title="Ventas de Hoy" value={`S/ ${dailyStats.totalSales.toFixed(2)}`} icon={<DollarSign />} detail="+15% vs ayer" />
-                    <StatCard title="Ingresos de Caja" value={`S/ ${dailyStats.cashIncome.toFixed(2)}`} icon={<ArrowUp className="text-green-400" />} />
-                    <StatCard title="Egresos de Caja" value={`S/ ${dailyStats.cashExpenses.toFixed(2)}`} icon={<ArrowDown className="text-red-400" />} />
-                    <StatCard title="Stock Bajo" value={dailyStats.lowStockProducts} icon={<Package />} detail="Necesitan atención" />
-                </div>
-
-                {/* --- Acciones Rápidas --- */}
-                <div className="mt-8">
-                    <h2 className="mb-4 text-xl font-bold text-gray-800 dark:text-gray-100">Acciones Rápidas</h2>
-                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-                        <QuickActionButton title="Registrar Venta" icon={<PlusCircle size={32} className="text-green-500"/>} userRoles={user.roles} />
-                        <QuickActionButton title="Registrar Producto" icon={<Package size={32} className="text-blue-500"/>} userRoles={user.roles} role="ferretero" />
-                        <QuickActionButton title="Ver Reportes" icon={<FileText size={32} className="text-yellow-500"/>} userRoles={user.roles} role="admin" />
-                        <QuickActionButton title="Gestionar Clientes" icon={<Users size={32} className="text-purple-500"/>} userRoles={user.roles} />
-                        <QuickActionButton title="Gestionar Usuarios" icon={<UserPlus size={32} className="text-red-500"/>} userRoles={user.roles} role="admin" />
-                    </div>
-                </div>
-
-                {/* --- Visualización de Datos --- */}
-                <div className="grid grid-cols-1 gap-8 mt-8 lg:grid-cols-3">
-                    {/* Gráfico de Ventas Semanales */}
-                    <div className="p-6 transition-all duration-300 bg-white border rounded-lg shadow-sm lg:col-span-2 dark:bg-gray-800 dark:border-gray-700">
-                        <h3 className="mb-4 font-bold text-gray-800 dark:text-white">Resumen de Ventas Semanales</h3>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <BarChart data={salesByDay}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(200, 200, 200, 0.2)" />
-                                <XAxis dataKey="name" tick={{ fill: theme === 'light' ? '#374151' : '#d1d5db' }} />
-                                <YAxis tick={{ fill: theme === 'light' ? '#374151' : '#d1d5db' }} />
-                                <Tooltip cursor={{fill: 'rgba(200, 200, 200, 0.1)'}} contentStyle={{ backgroundColor: theme === 'light' ? '#fff' : '#1f2937', border: '1px solid #374151' }}/>
-                                <Legend />
-                                <Bar dataKey="ventas" fill="#3b82f6" name="Ventas (S/)" radius={[4, 4, 0, 0]} />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </div>
-
-                    {/* Lista de Productos por Agotarse */}
-                    <div className="p-6 transition-all duration-300 bg-white border rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
-                        <h3 className="mb-4 font-bold text-gray-800 dark:text-white">Productos por Agotarse</h3>
-                        <ul className="space-y-4">
-                            {lowStockItems.map(item => (
-                                <li key={item.id} className="flex items-center justify-between">
-                                    <div>
-                                        <p className="font-semibold text-gray-800 dark:text-gray-100">{item.name}</p>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400">Stock Mínimo: {item.min_stock}</p>
-                                    </div>
-                                    <span className="px-3 py-1 text-xs font-bold text-red-800 bg-red-200 rounded-full dark:bg-red-300 dark:text-red-900">
-                                        Quedan: {item.stock}
-                                    </span>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                </div>
+            {/* Menú hamburguesa para móviles */}
+            <div className="md:hidden">
+                <button onClick={() => setSidebarOpen(!isSidebarOpen)} className="absolute top-4 left-4 z-20 text-gray-600">
+                    {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
+                </button>
+                {/* Overlay */}
+                {isSidebarOpen && <div className="fixed inset-0 bg-black opacity-50 z-10" onClick={() => setSidebarOpen(false)}></div>}
+                {/* Sidebar móvil */}
+                <aside
+                    className={`fixed top-0 left-0 h-full w-64 bg-white shadow-lg transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out z-20 relative`}
+                >
+                   {sidebarContent}
+                </aside>
+            </div>
+            
+            {/* Contenido Principal */}
+            <div className="flex-1 flex flex-col overflow-hidden">
+                <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-4 md:p-8">
+                    <Outlet /> {/* Aquí se renderizarán los componentes hijos */}
+                </main>
             </div>
         </div>
     );
