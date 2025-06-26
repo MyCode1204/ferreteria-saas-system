@@ -4,7 +4,6 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { Sun, Moon, DollarSign, ArrowUp, ArrowDown, Package, Users, LogOut, PlusCircle, FileText, UserPlus } from 'lucide-react';
 
 // --- DATOS DE EJEMPLO (Simulando una llamada a la API REST) ---
-// Estos datos vendrían de endpoints como /api/ventas/dia, /api/productos/, etc. [cite: 6]
 const dailyStats = {
     totalSales: 785.50,
     cashIncome: 650.00,
@@ -79,6 +78,19 @@ const Dashboard = () => {
         setTheme(theme === 'light' ? 'dark' : 'light');
     };
 
+    // --- INICIO DE LA CORRECCIÓN ---
+    // Si el usuario aún no ha cargado, muestra un mensaje de carga.
+    // Esto evita el error "Cannot read properties of null"
+    if (!user) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
+                <p className="text-xl text-gray-700 dark:text-gray-200">Cargando dashboard...</p>
+            </div>
+        );
+    }
+    // --- FIN DE LA CORRECCIÓN ---
+
+    // Si llegamos a este punto, 'user' ya no es null y podemos renderizar de forma segura.
     return (
         <div className="min-h-screen p-4 sm:p-6 lg:p-8 bg-gray-50 dark:bg-gray-900">
             <div className="max-w-7xl mx-auto">
@@ -86,7 +98,7 @@ const Dashboard = () => {
                 <header className="flex flex-col items-start justify-between gap-4 mb-8 sm:flex-row sm:items-center">
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard de Ferretería</h1>
-                        {user && <p className="mt-1 text-gray-600 dark:text-gray-300">Bienvenido de nuevo, <span className="font-semibold text-blue-500">{user.username}</span>!</p>}
+                        <p className="mt-1 text-gray-600 dark:text-gray-300">Bienvenido de nuevo, <span className="font-semibold text-blue-500">{user.username}</span>!</p>
                     </div>
                     <div className="flex items-center gap-4">
                         <button onClick={toggleTheme} className="p-2 transition-colors duration-200 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
@@ -100,7 +112,6 @@ const Dashboard = () => {
                 </header>
 
                 {/* --- KPIs Principales --- */}
-                {/* Estos KPIs se basan en los indicadores de uso del sistema [cite: 16] y el reporte diario  */}
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
                     <StatCard title="Ventas de Hoy" value={`S/ ${dailyStats.totalSales.toFixed(2)}`} icon={<DollarSign />} detail="+15% vs ayer" />
                     <StatCard title="Ingresos de Caja" value={`S/ ${dailyStats.cashIncome.toFixed(2)}`} icon={<ArrowUp className="text-green-400" />} />
@@ -109,7 +120,6 @@ const Dashboard = () => {
                 </div>
 
                 {/* --- Acciones Rápidas --- */}
-                {/* Las acciones se basan en los casos de uso para diferentes roles [cite: 2] */}
                 <div className="mt-8">
                     <h2 className="mb-4 text-xl font-bold text-gray-800 dark:text-gray-100">Acciones Rápidas</h2>
                     <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
@@ -141,7 +151,6 @@ const Dashboard = () => {
                     {/* Lista de Productos por Agotarse */}
                     <div className="p-6 transition-all duration-300 bg-white border rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
                         <h3 className="mb-4 font-bold text-gray-800 dark:text-white">Productos por Agotarse</h3>
-                        {/* La alerta por stock mínimo es un requisito del MVP  */}
                         <ul className="space-y-4">
                             {lowStockItems.map(item => (
                                 <li key={item.id} className="flex items-center justify-between">

@@ -13,7 +13,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 @Component
-@Order(1)
+@Order(1) // Se ejecuta antes que los filtros de seguridad de Spring
 @Slf4j
 public class TenantFilter extends OncePerRequestFilter {
 
@@ -21,50 +21,53 @@ public class TenantFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        // Solo aplicamos la lógica de inquilino a las rutas de la app y de auth
-        if (request.getRequestURI().startsWith("/api/app/") || request.getRequestURI().startsWith("/api/auth/")) {
+        String path = request.getRequestURI();
 
+        // Condición mejorada: la ruta debe ser de inquilino Y NO de superadmin.
+        boolean isTenantRoute = (path.startsWith("/api/app/") || path.startsWith("/api/auth/"))
+                && !path.startsWith("/api/auth/superadmin/");
+
+        if (isTenantRoute) {
             String tenantId = null;
 
-            // --- ESTRATEGIA 1: Identificar por Cabecera (Ideal para Postman) ---
+            // Estrategia 1: Identificar por Cabecera (Ideal para Postman/pruebas)
             String tenantFromHeader = request.getHeader("X-Tenant-ID");
             if (tenantFromHeader != null && !tenantFromHeader.isEmpty()) {
                 tenantId = tenantFromHeader;
                 log.info("TenantFilter: Inquilino identificado por CABECERA: {}", tenantId);
             }
 
-            // --- ESTRATEGIA 2: Identificar por Subdominio (Ideal para Producción) ---
+            // Estrategia 2: Identificar por Subdominio (Ideal para Producción)
             if (tenantId == null) {
-                // request.getServerName() devuelve, por ejemplo, "compania-chavez.ferreteria.doc"
                 String serverName = request.getServerName();
                 String[] parts = serverName.split("\\.");
 
-                // Si el dominio tiene al menos 2 partes (ej. "algo.com") y la primera no es "www" o "localhost"
                 if (parts.length > 1 && !parts[0].equalsIgnoreCase("www") && !parts[0].equalsIgnoreCase("localhost")) {
                     tenantId = parts[0];
                     log.info("TenantFilter: Inquilino identificado por SUBDOMINIO: {}", tenantId);
                 }
             }
 
-            // --- VALIDACIÓN FINAL ---
+            // Validación Final
             if (tenantId == null) {
-                // Si después de ambas estrategias no encontramos nada, devolvemos un error.
+                log.warn("TenantFilter: No se pudo identificar al inquilino para la ruta: {}. Se requiere la cabecera X-Tenant-ID o un subdominio válido.", path);
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 response.getWriter().write("Error: No se pudo identificar al inquilino. Se requiere la cabecera X-Tenant-ID o un subdominio valido.");
-                return;
+                return; // Detenemos la cadena de filtros
             }
 
-            // --- APLICAR CONTEXTO Y CONTINUAR ---
+            // Aplicar contexto y continuar
             try {
                 TenantContext.setCurrentTenant(tenantId);
                 filterChain.doFilter(request, response);
             } finally {
-                // Limpiamos el contexto al final de la petición para no afectar a otras.
+                // Es crucial limpiar el contexto para no afectar a otras peticiones.
                 TenantContext.clear();
             }
 
         } else {
-            // Para otras rutas (ej. /api/superadmin), no hacemos nada y solo continuamos.
+            // Para todas las demás rutas (superadmin, general, etc.), no hacemos nada y solo continuamos.
+            log.trace("TenantFilter: Omitiendo la lógica de inquilino para la ruta: {}", path);
             filterChain.doFilter(request, response);
         }
     }
