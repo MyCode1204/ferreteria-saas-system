@@ -1,4 +1,3 @@
-// Ubicación: backend/src/main/java/com/ferreteria/config/SecurityConfig.java
 package com.ferreteria.config;
 
 import lombok.RequiredArgsConstructor;
@@ -15,6 +14,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.springframework.security.config.Customizer.withDefaults;
@@ -25,7 +25,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final TenantFilter tenantFilter;
+    private final TenantFilter tenantFilter; // Ya lo tenías inyectado, ¡perfecto!
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final AuthenticationProvider authenticationProvider;
 
@@ -35,15 +35,21 @@ public class SecurityConfig {
                 .cors(withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // AÑADIMOS LA NUEVA RUTA PÚBLICA
-                        .requestMatchers( "/api/auth/superadmin/login", "/api/auth/**", "/api/general/**", "/ws-ferreteria/**").permitAll()
+                        .requestMatchers("/api/auth/**", "/api/general/**", "/ws-ferreteria/**").permitAll()
                         .requestMatchers("/api/superadmin/**").hasRole("SUPER_ADMIN")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
+                // --- LA CONFIGURACIÓN DE FILTROS CORREGIDA ---
+                // 1. Primero, añadimos el filtro JWT antes del filtro de autenticación estándar.
+                //    Ahora Spring ya sabe dónde se encuentra 'JwtAuthenticationFilter'.
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+
+                // 2. Ahora que 'JwtAuthenticationFilter' tiene un lugar, podemos añadir
+                //    nuestro 'TenantFilter' antes de él, asegurando el orden correcto.
+                .addFilterBefore(tenantFilter, JwtAuthenticationFilter.class);
 
         return http.build();
     }
@@ -52,10 +58,11 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // AÑADIMOS la URL por defecto (sin subdominio) a los orígenes permitidos.
-        configuration.setAllowedOrigins(List.of("http://localhost:5174", "http://localhost:5173", "http://compania-chavez.localhost:5173"));
+        configuration.setAllowedOriginPatterns(Arrays.asList("http://*.localhost:5173", "http://localhost:5173"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Tenant-ID"));
+        configuration.setAllowCredentials(true);
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
