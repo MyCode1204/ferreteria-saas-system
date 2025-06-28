@@ -57,12 +57,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             UserDetails userDetails;
             String path = request.getRequestURI();
 
-            // ¡AQUÍ ESTÁ LA LÓGICA CLAVE!
-            // Decidimos qué servicio usar basándonos en la ruta de la API.
-            if (path.startsWith("/api/superadmin/")) {
+            // --- ¡LÓGICA CORREGIDA! ---
+            if (path.startsWith("/api/superadmin/") || path.startsWith("/api/auth/superadmin/")) {
                 userDetails = this.superAdminUserDetailsService.loadUserByUsername(username);
             } else {
-                // Para el resto de rutas de app, usamos el servicio de inquilino.
                 userDetails = this.tenantUserDetailsService.loadUserByUsername(username);
             }
 
