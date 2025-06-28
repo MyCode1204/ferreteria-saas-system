@@ -8,3 +8,4 @@ CREATE TABLE usuarios_master (
 );
 
 INSERT INTO usuarios_master (username, password, role) VALUES ('superadmin', '$2a$10$3z3w.N3B.y5pZ4.5.3nJ9e/G/5c.9KjY6.YjV.d/5e.7X.z/d.u', 'SUPER_ADMIN');
+

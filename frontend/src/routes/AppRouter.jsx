@@ -10,8 +10,8 @@ import SuperAdminDashboard from '../pages/dashboard/SuperAdminDashboard';
 // --- VISTAS DEL DASHBOARD DEL CLIENTE ---
 // ¡Importa aquí los nuevos componentes que crearemos!
 import VentaRapida from '../pages/client/views/VentaRapida';
-import GestionProductos from '../pages/client/views/GestionProductos';
-import GestionClientes from '../pages/client/views/GestionClientes';
+import GestionProductos from '../pages/client/views/GestionProductos/GestionProductos';
+import GestionClientes from '../pages/client/views/GestionClientes/GestionClientes';
 import GestionCaja from '../pages/client/views/GestionCaja';
 import Reportes from '../pages/client/views/Reportes';
 

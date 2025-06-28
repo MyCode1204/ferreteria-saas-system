@@ -44,7 +44,7 @@ public class VentaService {
         venta.setUsuario(usuario);
         venta.setCliente(cliente);
         venta.setMetodoPago(ventaRequest.getMetodoPago());
-        venta.setEstado("COMPLETADA");
+        venta.setEstado("PENDIENTE"); // La venta se crea como PENDIENTE
 
         List<DetalleVenta> detalles = new ArrayList<>();
         double totalVenta = 0.0;
@@ -87,6 +87,9 @@ public class VentaService {
 
         venta.setTotal(totalVenta);
         venta.setDetalles(detalles);
+
+        // Al final, cambiamos el estado a COMPLETADA
+        venta.setEstado("COMPLETADA");
 
         return ventaRepository.save(venta);
     }

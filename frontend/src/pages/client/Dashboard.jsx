@@ -46,6 +46,7 @@ const Dashboard = () => {
         </div>
 
         <nav className="mt-10 px-2">
+            {/* <NavItem to="" icon={<ShoppingCart size={20} />}>DASHBOARD</NavItem> */}
             <NavItem to="/ventas" icon={<ShoppingCart size={20} />}>Venta Rápida</NavItem>
             <NavItem to="/productos" icon={<Package size={20} />}>Productos</NavItem>
             <NavItem to="/clientes" icon={<Users size={20} />}>Clientes</NavItem>

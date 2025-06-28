@@ -1,7 +1,7 @@
 app:
   datasource:
     master:
-      url: jdbc:postgresql://localhost:59908/ferreteria_master
+      url: jdbc:postgresql://localhost:64555/ferreteria_master
       username: admin
       password: password
       driver-class-name: org.postgresql.Driver

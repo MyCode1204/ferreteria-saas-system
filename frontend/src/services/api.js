@@ -41,9 +41,11 @@ export const loginRequest = (tenantId, credentials) => {
 
 // --- NUEVAS FUNCIONES DE API ---
 
-// PRODUCTOS
+// --- PRODUCTOS (CRUD Completo) ---
 export const getProducts = (tenantId) => getApiClient(tenantId).get('/productos');
 export const createProduct = (tenantId, productData) => getApiClient(tenantId).post('/productos', productData);
+export const updateProduct = (tenantId, productId, productData) => getApiClient(tenantId).put(`/productos/${productId}`, productData);
+export const deleteProduct = (tenantId, productId) => getApiClient(tenantId).delete(`/productos/${productId}`);
 
 // CLIENTES
 export const getClients = (tenantId) => getApiClient(tenantId).get('/clientes');
@@ -51,6 +53,8 @@ export const createClient = (tenantId, clientData) => getApiClient(tenantId).pos
 
 // VENTAS
 export const createSale = (tenantId, saleData) => getApiClient(tenantId).post('/ventas', saleData);
+export const getPendingSales = (tenantId) => getApiClient(tenantId).get('/ventas/pendientes');
+export const completeSale = (tenantId, saleId) => getApiClient(tenantId).put(`/ventas/${saleId}/completar`);
 
 // CAJA
 export const getIncomes = (tenantId) => getApiClient(tenantId).get('/caja/ingresos');
