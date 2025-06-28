@@ -6,12 +6,12 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService; // <-- Importamos el servicio
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -19,12 +19,21 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 @Component
-@RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-    // ¡AQUÍ ESTÁ EL CAMBIO! Ya no pedimos SecurityConfig, pedimos UserDetailsService directamente.
-    private final UserDetailsService userDetailsService;
+    private final UserDetailsService tenantUserDetailsService;
+    private final UserDetailsService superAdminUserDetailsService;
+
+    // Modificamos el constructor para recibir ambos UserDetailsService
+    public JwtAuthenticationFilter(
+            JwtService jwtService,
+            @Qualifier("userDetailsService") UserDetailsService tenantUserDetailsService,
+            @Qualifier("usuarioMasterDetailsService") UserDetailsService superAdminUserDetailsService) {
+        this.jwtService = jwtService;
+        this.tenantUserDetailsService = tenantUserDetailsService;
+        this.superAdminUserDetailsService = superAdminUserDetailsService;
+    }
 
     @Override
     protected void doFilterInternal(
@@ -45,8 +54,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         username = jwtService.extractUsername(jwt);
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            // Usamos el userDetailsService directamente, ya no a través de securityConfig
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+            UserDetails userDetails;
+            String path = request.getRequestURI();
+
+            // ¡AQUÍ ESTÁ LA LÓGICA CLAVE!
+            // Decidimos qué servicio usar basándonos en la ruta de la API.
+            if (path.startsWith("/api/superadmin/")) {
+                userDetails = this.superAdminUserDetailsService.loadUserByUsername(username);
+            } else {
+                // Para el resto de rutas de app, usamos el servicio de inquilino.
+                userDetails = this.tenantUserDetailsService.loadUserByUsername(username);
+            }
 
             if (jwtService.isTokenValid(jwt, userDetails)) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
